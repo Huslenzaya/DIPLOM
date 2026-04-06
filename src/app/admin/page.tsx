@@ -60,10 +60,16 @@ export default function AdminPage() {
       if (filter.kind) params.set("kind", filter.kind);
 
       const res = await fetch(`/api/admin/lessons?${params}`);
+      if (!res.ok) {
+        console.error("Failed to fetch lessons:", res.statusText);
+        setLessons([]);
+        return;
+      }
       const data = await res.json();
-      setLessons(data);
+      setLessons(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Failed to fetch lessons:", error);
+      setLessons([]);
     } finally {
       setLoading(false);
     }
