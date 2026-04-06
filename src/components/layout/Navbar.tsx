@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import type { PageId } from "@/types";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 const NAV_ITEMS: { id: PageId; label: string; icon: string }[] = [
   { id: "lessons", label: "Хичээл", icon: "📘" },
@@ -18,16 +19,25 @@ const HIDDEN_ROUTES = ["/auth"];
 export function Navbar() {
   const router = useRouter();
   const { lives, streak, userName, isLoggedIn, openAuthModal } = useAppStore();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
 
   const pathname =
     typeof window !== "undefined" ? window.location.pathname : "/";
   const hidden = HIDDEN_ROUTES.includes(pathname);
 
+  function closeMenus() {
+    setMenuOpen(false);
+    setProfileOpen(false);
+  }
+
   function handleLogoClick() {
+    closeMenus();
     router.push("/");
   }
 
   function handleNavClick(page: PageId) {
+    closeMenus();
     router.push(`/${page === "home" ? "" : page}`);
   }
 
@@ -36,6 +46,21 @@ export function Navbar() {
       openAuthModal("Профайл үзэхийн тулд нэвтэрнэ үү.");
       return;
     }
+
+    const isMobile =
+      typeof window !== "undefined" ? window.innerWidth < 768 : false;
+
+    if (isMobile) {
+      setProfileOpen((current) => !current);
+      setMenuOpen(false);
+      return;
+    }
+
+    goToProfile();
+  }
+
+  function goToProfile() {
+    closeMenus();
     router.push("/profile");
   }
 
@@ -56,7 +81,18 @@ export function Navbar() {
           </div>
           GALIGTAN
         </button>
-
+        {!hidden && (
+          <button
+            onClick={() => {
+              setMenuOpen((current) => !current);
+              setProfileOpen(false);
+            }}
+            className="md:hidden flex flex-col gap-1 p-2 rounded-lg hover:bg-paper-50 transition-colors">
+            <div className="w-5 h-0.5 bg-ink"></div>
+            <div className="w-5 h-0.5 bg-ink"></div>
+            <div className="w-5 h-0.5 bg-ink"></div>
+          </button>
+        )}
         {!hidden &&
           NAV_ITEMS.map((item) => {
             const href = `/${item.id}`;
@@ -68,7 +104,7 @@ export function Navbar() {
                 id={`nb-${item.id}`}
                 onClick={() => handleNavClick(item.id)}
                 className={cn(
-                  "flex items-center gap-1.5 px-3 py-2 rounded-xl text-[14px] font-bold transition-all duration-200 whitespace-nowrap",
+                  "hidden md:flex items-center gap-1.5 px-3 py-2 rounded-xl text-[14px] font-bold transition-all duration-200 whitespace-nowrap",
                   active
                     ? "bg-sky-300 text-white"
                     : "text-ink-muted hover:bg-paper-50 hover:text-ink",
@@ -78,11 +114,10 @@ export function Navbar() {
               </button>
             );
           })}
-
         {!hidden && (
-          <div className="ml-auto flex items-center gap-3">
+          <div className="ml-auto flex items-center gap-3 relative">
             {isLoggedIn && (
-              <>
+              <div className="hidden md:flex items-center gap-3">
                 <div className="flex items-center gap-1">
                   {[1, 2, 3, 4, 5].map((i) => (
                     <div
@@ -112,7 +147,7 @@ export function Navbar() {
                   />
                   <span>{streak}</span>
                 </div>
-              </>
+              </div>
             )}
 
             <button
@@ -120,8 +155,73 @@ export function Navbar() {
               className="min-w-[40px] h-10 px-3 rounded-full bg-gradient-to-br from-sky-300 to-grass-200 border-[3px] border-white flex items-center justify-center text-[14px] font-black text-white shadow-[0_2px_12px_rgba(26,107,189,.3)] transition-transform hover:scale-110">
               {isLoggedIn ? (userName?.[0]?.toUpperCase() ?? "?") : "Н"}
             </button>
+
+            {profileOpen && isLoggedIn && (
+              <div className="absolute right-0 top-full mt-3 w-56 rounded-[26px] bg-white border-2 border-paper-100 shadow-[0_24px_60px_rgba(22,28,45,.12)] p-3 z-50 md:hidden">
+                <button
+                  onClick={goToProfile}
+                  className="w-full text-left text-[14px] font-bold text-ink mb-3 px-3 py-3 rounded-[20px] border border-paper-100 hover:bg-paper-50 transition">
+                  Профайл руу явах
+                </button>
+                <div className="flex items-center justify-between gap-3 rounded-[20px] bg-paper-50 p-3 mb-2">
+                  <div className="flex items-center gap-2">
+                    <Image
+                      src="/icons/heart.png"
+                      alt="life"
+                      width={18}
+                      height={18}
+                      className="w-[18px] h-[18px] object-contain"
+                    />
+                    <div>
+                      <p className="text-[12px] text-ink-muted">Амьдрал</p>
+                      <p className="text-[14px] font-bold">{lives}/5</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between gap-3 rounded-[20px] bg-paper-50 p-3">
+                  <div className="flex items-center gap-2">
+                    <Image
+                      src="/icons/fire.png"
+                      alt="streak"
+                      width={18}
+                      height={18}
+                      className="w-[18px] h-[18px] object-contain"
+                    />
+                    <div>
+                      <p className="text-[12px] text-ink-muted">Streak</p>
+                      <p className="text-[14px] font-bold">{streak}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
+        {menuOpen && !hidden && (
+          <div className="absolute top-full left-0 right-0 bg-paper/95 backdrop-blur-xl border-b-2 border-paper-100 shadow-lg md:hidden">
+            <div className="app-shell py-4 flex flex-col gap-2">
+              {NAV_ITEMS.map((item) => {
+                const href = `/${item.id}`;
+                const active = pathname === href;
+
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => handleNavClick(item.id)}
+                    className={cn(
+                      "flex items-center gap-2 px-4 py-3 rounded-xl text-[14px] font-bold transition-all duration-200",
+                      active
+                        ? "bg-sky-300 text-white"
+                        : "text-ink-muted hover:bg-paper-50 hover:text-ink",
+                    )}>
+                    <span>{item.icon}</span>
+                    {item.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}{" "}
       </div>
     </nav>
   );

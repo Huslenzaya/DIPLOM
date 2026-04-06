@@ -1,15 +1,21 @@
+import "dotenv/config";
+import bcrypt from "bcrypt";
 import { prisma } from "../src/lib/prisma";
 
 async function main() {
+  const hashedPassword = await bcrypt.hash("123456", 10);
+
   const user = await prisma.user.upsert({
     where: {
       email: "test@galigtan.mn",
     },
-    update: {},
+    update: {
+      passwordHash: hashedPassword,
+    },
     create: {
       name: "Тест хэрэглэгч",
       email: "test@galigtan.mn",
-      passwordHash: "123456",
+      passwordHash: hashedPassword,
     },
   });
 

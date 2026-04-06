@@ -18,6 +18,7 @@ CREATE TABLE "UserProgress" (
     "streak" INTEGER NOT NULL DEFAULT 0,
     "lives" INTEGER NOT NULL DEFAULT 5,
     "placementLevel" INTEGER NOT NULL DEFAULT 1,
+    "hasSeenLevelEntry" BOOLEAN NOT NULL DEFAULT false,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "UserProgress_pkey" PRIMARY KEY ("id")

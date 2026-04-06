@@ -18,8 +18,10 @@ export function AuthModal() {
 
   const [tab, setTab] = useState<"in" | "up">("in");
   const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
   const [regName, setRegName] = useState("");
   const [regEmail, setRegEmail] = useState("");
+  const [regPassword, setRegPassword] = useState("");
 
   if (!authModalOpen) return null;
 
@@ -31,47 +33,84 @@ export function AuthModal() {
     }
   }
 
-  function doLogin() {
-    if (!loginEmail) {
-      showToast("И-мэйл оруулна уу", "bad");
+  async function doLogin() {
+    if (!loginEmail || !loginPassword) {
+      showToast("И-мэйл болон нууц үг оруулна уу", "bad");
       return;
     }
 
-    const normalized = loginEmail.trim().toLowerCase();
-    const name = normalized.split("@")[0] || "Хэрэглэгч";
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: loginEmail, password: loginPassword }),
+      });
 
-    setUser(name, normalized);
-    showToast("Амжилттай нэвтэрлээ", "ok");
-
-    setTimeout(() => {
-      const latest = useAppStore.getState();
-      if (!latest.hasSeenLevelEntry) {
-        router.push("/level-select");
-      } else {
-        router.push("/lessons");
+      const data = await response.json();
+      if (!response.ok) {
+        showToast(data.error || "Нэвтрэхэд алдаа гарлаа", "bad");
+        return;
       }
-    }, 50);
+
+      setUser(data.user.name, data.user.email, {
+        lives: data.progress?.lives ?? 5,
+        streak: data.progress?.streak ?? 0,
+        xp: data.progress?.xp ?? 0,
+        selectedGrade: data.progress?.selectedGrade ?? 6,
+        unlockedGrades: data.unlockedGrades ?? [6],
+        completedLessons: data.completedLessons ?? [],
+        placementLevel: data.progress?.placementLevel ?? 1,
+        hasSeenLevelEntry: data.progress?.hasSeenLevelEntry ?? false,
+      });
+
+      showToast("Амжилттай нэвтэрлээ", "ok");
+      closeAuthModal();
+      goAfterAuth();
+    } catch (error) {
+      showToast("Сүлжээний алдаа", "bad");
+    }
   }
 
-  function doRegister() {
-    if (!regName || !regEmail) {
+  async function doRegister() {
+    if (!regName || !regEmail || !regPassword) {
       showToast("Бүх талбарыг бөглөнө үү", "bad");
       return;
     }
 
-    const normalized = regEmail.trim().toLowerCase();
+    try {
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: regName,
+          email: regEmail,
+          password: regPassword,
+        }),
+      });
 
-    setUser(regName.trim(), normalized);
-    showToast("Амжилттай бүртгүүллээ", "ok");
-
-    setTimeout(() => {
-      const latest = useAppStore.getState();
-      if (!latest.hasSeenLevelEntry) {
-        router.push("/level-select");
-      } else {
-        router.push("/lessons");
+      const data = await response.json();
+      if (!response.ok) {
+        showToast(data.error || "Бүртгүүлэхэд алдаа гарлаа", "bad");
+        return;
       }
-    }, 50);
+
+      setUser(data.user.name, data.user.email, {
+        lives: data.progress?.lives ?? 5,
+        streak: data.progress?.streak ?? 0,
+        xp: data.progress?.xp ?? 0,
+        selectedGrade: data.progress?.selectedGrade ?? 6,
+        unlockedGrades: data.unlockedGrades ?? [6],
+        completedLessons: data.completedLessons ?? [],
+        placementLevel: data.progress?.placementLevel ?? 1,
+        hasSeenLevelEntry: data.progress?.hasSeenLevelEntry ?? false,
+      });
+
+      showToast("Амжилттай бүртгүүллээ", "ok");
+      closeAuthModal();
+      goAfterAuth();
+    } catch (error) {
+      showToast("Сүлжээний алдаа", "bad");
+    }
   }
 
   const inputCls =
@@ -133,6 +172,8 @@ export function AuthModal() {
                 className={inputCls}
                 type="password"
                 placeholder="••••••••"
+                value={loginPassword}
+                onChange={(e) => setLoginPassword(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && doLogin()}
               />
             </div>
@@ -184,6 +225,8 @@ export function AuthModal() {
                 className={inputCls}
                 type="password"
                 placeholder="••••••••"
+                value={regPassword}
+                onChange={(e) => setRegPassword(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && doRegister()}
               />
             </div>

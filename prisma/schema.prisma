@@ -28,6 +28,7 @@ model UserProgress {
   streak         Int      @default(0)
   lives          Int      @default(5)
   placementLevel Int      @default(1)
+  hasSeenLevelEntry Boolean  @default(false)
   updatedAt      DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)

@@ -41,7 +41,11 @@ interface AppState extends UserProfileData {
   activeUserEmail: string | null;
   profiles: Record<string, UserProfileData>;
 
-  setUser: (name: string, email: string) => void;
+  setUser: (
+    name: string,
+    email: string,
+    serverProfile?: Partial<UserProfileData>,
+  ) => void;
   logout: () => void;
 
   authModalOpen: boolean;
@@ -181,20 +185,27 @@ export const useAppStore = create<AppState>()(
       authModalOpen: false,
       authModalReason: "",
 
-      setUser: (name, email) =>
+      setUser: (name, email, serverProfile) =>
         set((s) => {
           const normalizedEmail = normalizeEmail(email);
           const existing = s.profiles[normalizedEmail];
           const fallbackName =
             name?.trim() || normalizedEmail.split("@")[0] || "Хэрэглэгч";
 
-          const profile: UserProfileData = existing
+          const baseProfile: UserProfileData = existing
             ? {
                 ...existing,
                 userName: existing.userName || fallbackName,
                 userEmail: normalizedEmail,
               }
             : buildDefaultProfile(fallbackName, normalizedEmail);
+
+          const profile: UserProfileData = {
+            ...baseProfile,
+            userName: fallbackName,
+            userEmail: normalizedEmail,
+            ...serverProfile,
+          };
 
           return {
             ...profile,
