@@ -485,11 +485,8 @@ export function LessonsPage() {
   } = useAppStore();
 
   const [showLevelModal, setShowLevelModal] = useState(false);
-
-  const gradeLessons = useMemo(
-    () => LESSONS.filter((lesson) => lesson.grade === selectedGrade),
-    [selectedGrade],
-  );
+  const { lessons, loading } = useLessons(selectedGrade);
+  const gradeLessons = lessons;
 
   const previewLessonId = gradeLessons[0]?.id;
 
@@ -512,6 +509,18 @@ export function LessonsPage() {
     }
   }, [isLoggedIn, activeLesson, previewLessonId, setLesson]);
 
+  if (loading) {
+    return (
+      <div className="app-shell max-w-[1200px] mx-auto px-6 py-10">
+        <div className="bg-white border-2 border-paper-100 rounded-[28px] p-8">
+          <p className="text-[24px] font-black text-ink mb-2">
+            Уншиж байна...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (!gradeLessons.length || !activeLesson) {
     return (
       <div className="app-shell max-w-[1200px] mx-auto px-6 py-10">
@@ -520,7 +529,7 @@ export function LessonsPage() {
             Агуулга олдсонгүй
           </p>
           <p className="text-[15px] text-ink-muted font-semibold">
-            Энэ ангид хараахан хичээлийн өгөгдөл ороогүй байна.
+            Энэ ангид�арахан хичээлийн өгөгдөл ороогүй байна. Админ панелээс шинэ хичээл нэмнэ үү!
           </p>
         </div>
       </div>
@@ -652,7 +661,7 @@ export function LessonsPage() {
         <div className="grid grid-cols-1 xl:grid-cols-[430px_1fr] gap-6 xl:gap-8 mb-8">
           <div className="space-y-4">
             {gradeLessons.map((lesson, index) => {
-              const meta = KIND_META[lesson.kind];
+              const meta = KIND_META[lesson.kind as keyof typeof KIND_META];
               const active = lesson.id === activeLesson.id;
               const done = completedLessons.includes(lesson.id);
               const locked = !isLoggedIn && lesson.id !== previewLessonId;
@@ -722,7 +731,7 @@ export function LessonsPage() {
                       </p>
 
                       <p className="text-[13px] text-ink-muted font-semibold leading-relaxed">
-                        {lesson.short}
+                        {lesson.shortDesc}
                       </p>
                     </div>
                   </div>
@@ -738,9 +747,9 @@ export function LessonsPage() {
                   <span
                     className={cn(
                       "inline-flex px-3 py-1 rounded-full border text-[12px] font-extrabold",
-                      KIND_META[activeLesson.kind].chip,
+                      KIND_META[activeLesson.kind as keyof typeof KIND_META].chip,
                     )}>
-                    {KIND_META[activeLesson.kind].label}
+                    {KIND_META[activeLesson.kind as keyof typeof KIND_META].label}
                   </span>
 
                   <span className="inline-flex px-3 py-1 rounded-full bg-paper-50 text-ink-muted text-[12px] font-bold border border-paper-100">
@@ -765,7 +774,7 @@ export function LessonsPage() {
                 </h2>
 
                 <p className="text-[15px] lg:text-[16px] text-ink-muted font-semibold mt-3 leading-relaxed max-w-[780px]">
-                  {activeLesson.short}
+                  {activeLesson.shortDesc}
                 </p>
               </div>
 
@@ -776,7 +785,7 @@ export function LessonsPage() {
                     return;
                   }
                   startQuiz(
-                    activeLesson.quiz,
+                    activeLesson.quizKey || `quiz_${activeLesson.grade}_${activeLesson.kind}`,
                     true,
                     activeLesson.kind === "exam",
                     "normal",
@@ -790,16 +799,20 @@ export function LessonsPage() {
                     : "bg-sky-300 text-white hover:bg-sky-200",
                 )}>
                 {isLoggedIn
-                  ? KIND_META[activeLesson.kind].button
+                  ? KIND_META[activeLesson.kind as keyof typeof KIND_META].button
                   : "Нэвтэрч үргэлжлүүлэх"}
               </button>
             </div>
 
             <div className="border-t border-paper-50 pt-6">
-              <div
-                className="prose prose-sm max-w-none prose-p:leading-relaxed prose-p:font-semibold prose-p:text-[#5f6787] prose-li:text-[#5f6787] prose-li:font-semibold prose-strong:text-[#1a1a2e]"
-                dangerouslySetInnerHTML={{ __html: activeLesson.html }}
-              />
+              {activeLesson.htmlContent ? (
+                <div
+                  className="prose prose-sm max-w-none prose-p:leading-relaxed prose-p:font-semibold prose-p:text-[#5f6787] prose-li:text-[#5f6787] prose-li:font-semibold prose-strong:text-[#1a1a2e]"
+                  dangerouslySetInnerHTML={{ __html: activeLesson.htmlContent }}
+                />
+              ) : (
+                <p className="text-ink-muted font-semibold">Агуулга байхгүй</p>
+              )}
             </div>
           </div>
         </div>
