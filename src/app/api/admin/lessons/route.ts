@@ -14,6 +14,11 @@ export async function GET(request: NextRequest) {
 
     const lessons = await prisma.lesson.findMany({
       where,
+      include: {
+        quiz: {
+          select: { id: true, title: true, type: true, totalPoints: true }
+        }
+      },
       orderBy: [{ grade: "asc" }, { order: "asc" }],
     });
 
@@ -31,7 +36,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { grade, kind, title, shortDesc, htmlContent, quizKey, order } =
+    const { grade, kind, title, shortDesc, htmlContent, quizId, order } =
       body;
 
     if (!grade || !kind || !title) {
@@ -41,6 +46,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // If quizId provided, verify quiz exists
+    if (quizId) {
+      const quiz = await prisma.quiz.findUnique({ where: { id: quizId } });
+      if (!quiz) {
+        return NextResponse.json(
+          { error: "Шалгалт олдсонгүй" },
+          { status: 400 }
+        );
+      }
+    }
+
     const lesson = await prisma.lesson.create({
       data: {
         grade: parseInt(grade),
@@ -48,9 +64,10 @@ export async function POST(request: NextRequest) {
         title,
         shortDesc: shortDesc || null,
         htmlContent: htmlContent || null,
-        quizKey: quizKey || null,
+        quizId: quizId || null,
         order: order || 0,
       },
+      include: { quiz: true }
     });
 
     return NextResponse.json(lesson, { status: 201 });

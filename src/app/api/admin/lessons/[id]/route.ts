@@ -13,6 +13,9 @@ export async function GET(
         completedBy: {
           select: { userId: true, completedAt: true },
         },
+        quiz: {
+          select: { id: true, title: true, type: true, totalPoints: true, questions: { select: { id: true } } }
+        }
       },
     });
 
@@ -40,8 +43,19 @@ export async function PUT(
 ) {
   try {
     const body = await request.json();
-    const { grade, kind, title, shortDesc, htmlContent, quizKey, order } =
+    const { grade, kind, title, shortDesc, htmlContent, quizId, order } =
       body;
+
+    // If quizId provided, verify quiz exists
+    if (quizId) {
+      const quiz = await prisma.quiz.findUnique({ where: { id: quizId } });
+      if (!quiz) {
+        return NextResponse.json(
+          { error: "Шалгалт олдсонгүй" },
+          { status: 400 }
+        );
+      }
+    }
 
     const lesson = await prisma.lesson.update({
       where: { id: params.id },
@@ -51,9 +65,10 @@ export async function PUT(
         ...(title && { title }),
         ...(shortDesc !== undefined && { shortDesc }),
         ...(htmlContent !== undefined && { htmlContent }),
-        ...(quizKey !== undefined && { quizKey }),
+        ...(quizId !== undefined && { quizId: quizId || null }),
         ...(order !== undefined && { order }),
       },
+      include: { quiz: true }
     });
 
     return NextResponse.json(lesson);

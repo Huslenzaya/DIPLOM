@@ -60,15 +60,17 @@ model CompletedLesson {
 model QuizAttempt {
   id          String   @id @default(cuid())
   userId      String
-  quizTopic   String
+  quizId      String
   score       Int
   total       Int
   passed      Boolean
-  mode        String
-  targetGrade Int?
-  createdAt   DateTime @default(now())
+  attemptedAt DateTime @default(now())
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quiz Quiz  @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([quizId])
 }
 
 model Lesson {
@@ -78,13 +80,48 @@ model Lesson {
   title       String
   shortDesc   String?
   htmlContent String?
-  quizKey     String?
+  quizId      String?
   order       Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   completedBy CompletedLesson[]
+  quiz        Quiz?    @relation(fields: [quizId], references: [id], onDelete: SetNull)
 
   @@index([grade])
   @@index([kind])
+}
+
+model Quiz {
+  id          String   @id @default(cuid())
+  title       String   @unique
+  description String?
+  grade       Int
+  type        String   @default("assignment") // assignment, homework, exam
+  totalPoints Int      @default(100)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  questions QuizQuestion[]
+  lessons   Lesson[]
+  attempts  QuizAttempt[]
+
+  @@index([grade])
+  @@index([type])
+}
+
+model QuizQuestion {
+  id        String   @id @default(cuid())
+  quizId    String
+  question  String
+  type      String   @default("multiple") // multiple, short, essay
+  options   String[] // JSON array of options for multiple choice
+  answer    String   // Correct answer(s)
+  points    Int      @default(10)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@index([quizId])
 }

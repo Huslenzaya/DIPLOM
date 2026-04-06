@@ -2,6 +2,17 @@
 
 import { useState, useEffect } from "react";
 
+interface Quiz {
+  id: string;
+  title: string;
+  description?: string;
+  grade: number;
+  type: string;
+  totalPoints: number;
+  questions: any[];
+  createdAt: string;
+}
+
 interface Lesson {
   id: string;
   grade: number;
@@ -9,15 +20,17 @@ interface Lesson {
   title: string;
   shortDesc?: string;
   htmlContent?: string;
-  quizKey?: string;
+  quizId?: string;
   order: number;
   createdAt: string;
+  quiz?: any;
 }
 
 const KIND_OPTIONS = ["lesson", "rule", "practice", "exam"];
 const GRADES = [6, 7, 8, 9, 10, 11, 12];
+const QUIZ_TYPES = ["assignment", "homework", "exam"];
 
-export default function AdminLessonsPage() {
+export default function AdminPage() {
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState({ grade: "", kind: "" });
