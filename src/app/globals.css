@@ -1,0 +1,260 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-mongolian: "Noto Sans Mongolian", serif;
+
+    --app-max: 1440px;
+    --page-x: 24px;
+    --page-x-lg: 40px;
+
+    --radius-card: 28px;
+    --radius-btn: 18px;
+
+    --text-base: 18px;
+    --text-sm: 16px;
+    --text-lg: 20px;
+    --text-xl: 24px;
+    --text-2xl: 32px;
+    --text-3xl: 40px;
+    --text-4xl: 56px;
+
+    --space-section: 56px;
+    --space-card: 24px;
+    --space-gap: 24px;
+  }
+
+  html {
+    font-size: 17px;
+  }
+
+  @media (min-width: 1280px) {
+    html {
+      font-size: 18px;
+    }
+  }
+
+  body {
+    background-color: #fffef9;
+    color: #1a1a2e;
+  }
+
+  /* Mongolian script — always vertical */
+  .mongolian {
+    font-family: var(--font-mongolian);
+    writing-mode: vertical-lr;
+    text-orientation: mixed;
+    direction: ltr;
+  }
+}
+
+@layer components {
+  /* Global page width */
+  .app-shell {
+    width: 100%;
+    max-width: var(--app-max);
+    margin: 0 auto;
+    padding-left: var(--page-x);
+    padding-right: var(--page-x);
+  }
+
+  @media (min-width: 1024px) {
+    .app-shell {
+      padding-left: var(--page-x-lg);
+      padding-right: var(--page-x-lg);
+    }
+  }
+
+  .page-section {
+    padding-top: var(--space-section);
+    padding-bottom: var(--space-section);
+  }
+
+  .app-card {
+    border-radius: var(--radius-card);
+    padding: var(--space-card);
+  }
+
+  .app-button {
+    min-height: 52px;
+    padding: 0 24px;
+    border-radius: var(--radius-btn);
+    font-size: 18px;
+    font-weight: 800;
+  }
+
+  .app-title-xl {
+    font-size: var(--text-4xl);
+    line-height: 0.98;
+    font-weight: 900;
+  }
+
+  .app-title-lg {
+    font-size: var(--text-3xl);
+    line-height: 1.05;
+    font-weight: 800;
+  }
+
+  .app-title-md {
+    font-size: var(--text-2xl);
+    line-height: 1.15;
+    font-weight: 800;
+  }
+
+  .app-text {
+    font-size: var(--text-base);
+    line-height: 1.65;
+  }
+
+  .app-text-sm {
+    font-size: var(--text-sm);
+    line-height: 1.6;
+  }
+
+  /* Card flip for flashcards */
+  .flip-scene {
+    perspective: 1000px;
+  }
+
+  .flip-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-style: preserve-3d;
+  }
+
+  .flip-scene.flipped .flip-inner {
+    transform: rotateY(180deg);
+  }
+
+  .flip-face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+  }
+
+  .flip-back {
+    transform: rotateY(180deg);
+  }
+
+  /* Progress bar smooth */
+  .progress-fill {
+    transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  /* Quiz option states */
+  .quiz-opt-correct {
+    @apply border-grass-300 bg-grass-50;
+    animation: pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .quiz-opt-wrong {
+    @apply border-ember-300 bg-ember-50;
+    animation: wobble 0.4s ease;
+  }
+
+  /* Balloon */
+  @keyframes riseUp {
+    from {
+      bottom: -80px;
+      opacity: 1;
+    }
+    to {
+      bottom: 110%;
+      opacity: 0.7;
+    }
+  }
+
+  .balloon-rise {
+    animation: riseUp linear forwards;
+  }
+}
+
+@layer utilities {
+  /* Floating card bob */
+  @keyframes bob {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  @keyframes pop {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.06);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  @keyframes wobble {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    25% {
+      transform: translateX(-8px);
+    }
+    75% {
+      transform: translateX(8px);
+    }
+  }
+
+  @keyframes fadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-bob {
+    animation: bob 4s ease-in-out infinite;
+  }
+  .animate-bob-2 {
+    animation: bob 4s ease-in-out infinite;
+    animation-delay: -1.4s;
+  }
+  .animate-bob-3 {
+    animation: bob 4s ease-in-out infinite;
+    animation-delay: -2.8s;
+  }
+  .animate-bob-4 {
+    animation: bob 4s ease-in-out infinite;
+    animation-delay: -0.7s;
+  }
+  .animate-pop {
+    animation: pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .animate-wobble {
+    animation: wobble 0.4s ease;
+  }
+  .animate-fade-up {
+    animation: fadeUp 0.35s ease;
+  }
+
+  .font-mongolian {
+    font-family: var(--font-mongolian);
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}

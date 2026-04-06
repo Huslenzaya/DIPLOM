@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+
+  progress         UserProgress?
+  unlockedGrades   UnlockedGrade[]
+  completedLessons CompletedLesson[]
+  quizAttempts     QuizAttempt[]
+}
+
+model UserProgress {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  selectedGrade  Int      @default(6)
+  xp             Int      @default(0)
+  streak         Int      @default(0)
+  lives          Int      @default(5)
+  placementLevel Int      @default(1)
+  updatedAt      DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UnlockedGrade {
+  id     String @id @default(cuid())
+  userId String
+  grade  Int
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, grade])
+}
+
+model CompletedLesson {
+  id          String   @id @default(cuid())
+  userId      String
+  lessonId    String
+  completedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
+}
+
+model QuizAttempt {
+  id          String   @id @default(cuid())
+  userId      String
+  quizTopic   String
+  score       Int
+  total       Int
+  passed      Boolean
+  mode        String
+  targetGrade Int?
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
