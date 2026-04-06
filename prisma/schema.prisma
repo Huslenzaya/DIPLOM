@@ -50,9 +50,11 @@ model CompletedLesson {
   lessonId    String
   completedAt DateTime @default(now())
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson Lesson  @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 
   @@unique([userId, lessonId])
+  @@index([lessonId])
 }
 
 model QuizAttempt {
@@ -67,4 +69,22 @@ model QuizAttempt {
   createdAt   DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Lesson {
+  id          String   @id @default(cuid())
+  grade       Int
+  kind        String   @default("lesson")
+  title       String
+  shortDesc   String?
+  htmlContent String?
+  quizKey     String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  completedBy CompletedLesson[]
+
+  @@index([grade])
+  @@index([kind])
 }

@@ -1,7 +1,8 @@
 "use client";
 
 import { MongolianText } from "@/components/ui/MongolianText";
-import { GRADE_OPTIONS, LESSONS, LETTERS } from "@/lib/data";
+import { GRADE_OPTIONS, LETTERS } from "@/lib/data";
+import { useLessons } from "@/lib/hooks/useLessons";
 import { useAppStore } from "@/lib/store";
 import { cn, shuffle } from "@/lib/utils";
 import type { Letter } from "@/types";

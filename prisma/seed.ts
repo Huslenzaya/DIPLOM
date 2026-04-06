@@ -1,6 +1,8 @@
 import "dotenv/config";
 import bcrypt from "bcrypt";
-import { prisma } from "../src/lib/prisma";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 async function main() {
   const hashedPassword = await bcrypt.hash("123456", 10);
@@ -47,6 +49,33 @@ async function main() {
       grade: 6,
     },
   });
+
+  // Seed lessons for each grade
+  const grades = [6, 7, 8, 9, 10, 11, 12];
+  const kinds = ["lesson", "rule", "practice"];
+
+  for (const grade of grades) {
+    for (const kind of kinds) {
+      for (let i = 1; i <= 3; i++) {
+        await prisma.lesson.upsert({
+          where: {
+            id: `grade_${grade}_${kind}_${i}`,
+          },
+          update: {},
+          create: {
+            id: `grade_${grade}_${kind}_${i}`,
+            grade,
+            kind,
+            title: `${grade} анги - ${kind} ${i}`,
+            shortDesc: `Энэ нь ${grade} ангийн ${kind} хичээл юм`,
+            htmlContent: `<h2>${grade} анги - ${kind} ${i}</h2><p>Энэ хичээлийн агуулга байна</p>`,
+            quizKey: `quiz_${grade}_${kind}_${i}`,
+            order: i,
+          },
+        });
+      }
+    }
+  }
 
   console.log("Seed done:", user);
 }
