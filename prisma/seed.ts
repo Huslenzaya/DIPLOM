@@ -69,7 +69,7 @@ async function main() {
             title: `${grade} анги - ${kind} ${i}`,
             shortDesc: `Энэ нь ${grade} ангийн ${kind} хичээл юм`,
             htmlContent: `<h2>${grade} анги - ${kind} ${i}</h2><p>Энэ хичээлийн агуулга байна</p>`,
-            quizKey: `quiz_${grade}_${kind}_${i}`,
+
             order: i,
           },
         });
